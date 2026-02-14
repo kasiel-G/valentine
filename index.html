@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Valentine's Day</title>
+	<style>
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #ffe6e6;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+		}
+		.main {
+			text-align: center;
+			background-color: #fff0f5;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			width: 60%;
+		}
+		h2 {
+			color: #ff69b4;
+		}
+		img {
+			width: 50%;
+			margin: 20px 0;
+			border-radius: 50%;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+		button {
+			padding: 10px 20px;
+			margin: 10px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 16px;
+		}
+		#yesButton {
+			background-color: #ff69b4;
+			color: white;
+			padding: 1.5vw 2vw;
+			border-radius: 5vw;
+		}
+		#noButton {
+			background-color: #ccc;
+			color: black;
+			padding: 1.5vw 2vw;
+			border-radius: 5vw;
+		}
+		#yesButton:hover {
+			background-color: #ff1493;
+		}
+		#noButton:hover {
+			background-color: #ff0000;
+			color: white;
+			transition: background-color 0.3s, color 0.3s;
+			transform: translateY(-5px);
+			animation: shake 0.5s;	
+		}
+		@keyframes shake {
+			0% { transform: translate(0, 0); }
+			25% { transform: translate(-5px, 0); }
+			50% { transform: translate(5px, 0); }
+			75% { transform: translate(-5px, 0); }
+			100% { transform: translate(0, 0); }
+		}
+
+		/* FIX: Use display:none initially, then flex when shown */
+		.angry, .happy {
+			display: none;
+			text-align: center;
+			background-color: #fff0f5;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			flex-direction: column;
+			align-items: center;
+			width: 60%;
+		}
+		#angryImage, #happyImage {
+			width: 40%;
+		}
+		#angryYesButton {
+			background-color: #ff69b4;
+			color: white;
+			padding: 1.5vw 2vw;
+			border-radius: 5vw;
+		}
+		#angryYesButton:hover {
+			background-color: #ff1493;
+		}
+
+		canvas {
+			width: 100%;
+			height: 300px;
+			display: block;
+		}
+		.happy{
+			background-color: black;
+		}
+		a { color: white; text-decoration: none; }
+	</style>
+</head>
+<body>
+	<div class="main">
+		<h2>would you like to be my valentine?</h2>
+		<img src="giphy.webp" alt="" id="heartImage">
+		<div class="buttons">
+			<button id="yesButton">Yes</button>
+			<button id="noButton">No</button>
+		</div>
+	</div>
+
+	<div class="angry">
+		<h2>stop playing with me!</h2>
+		<h3>just say yes!</h3>
+		<img src="angry.webp" alt="angry face" id="angryImage">
+		<button id="angryYesButton">yes</button>
+	</div>
+
+	<div class="happy">
+		<h2>Yay! I'm so happy!</h2>
+		<h3>love you! ❤️</h3>
+		<img src="yeaauh.webp" alt="happy face" id="happyImage">
+		<canvas id="canvas"></canvas>
+	</div>
+</body>
+<script>
+	const noButton = document.getElementById('noButton');
+	let count = 0;
+
+	noButton.addEventListener('mouseover', () => {
+		const randomX = Math.floor(Math.random() * (window.innerWidth - noButton.offsetWidth));
+		const randomY = Math.floor(Math.random() * (window.innerHeight - noButton.offsetHeight));
+		noButton.style.position = 'absolute';
+		noButton.style.left = `${randomX}px`;
+		noButton.style.top = `${randomY}px`;
+		noButton.style.transition = 'left 0.3s, top 0.3s';
+		noButton.style.animation = 'shake 0.5s';
+		noButton.style.backgroundColor = 'red';
+
+		count++;
+
+		if (count > 10) {
+			document.querySelector('.angry').style.display = 'flex';
+			document.querySelector('.main').style.display = 'none';
+		}
+	});
+	
+	const angryYesButton = document.getElementById('angryYesButton');
+	angryYesButton.addEventListener('click', () => {
+		document.querySelector('.angry').style.display = 'none';
+		document.querySelector('.happy').style.display = 'flex';
+		startFireworks();
+	});
+
+	const yesButton = document.getElementById('yesButton');
+	yesButton.addEventListener('click', () => {
+		document.querySelector('.main').style.display = 'none';
+		document.querySelector('.happy').style.display = 'flex';
+		startFireworks();
+	});
+
+	function startFireworks() {
+		const canvas = document.getElementById('canvas');
+		const ctx = canvas.getContext('2d');
+
+		canvas.width = canvas.clientWidth;
+		canvas.height = canvas.clientHeight;
+
+		const clientWidth = canvas.width;
+		const clientHeight = canvas.height;
+
+		const frameRate = 60.0;
+		const frameDelay = 1000.0 / frameRate;
+
+		let timer = 0;
+		let particles = [];
+
+		// Full rainbow palette including blues and greens
+		const hueOptions = [
+			0,    // red
+			30,   // orange
+			60,   // yellow
+			120,  // green
+			180,  // cyan
+			210,  // sky blue
+			240,  // blue
+			270,  // purple
+			310,  // pink
+			340,  // hot pink
+		];
+
+		function random(min, max) {
+			return Math.random() * (max - min) + min;
+		}
+
+		function createFirework() {
+			// Pick a random color from our palette
+			const hue = hueOptions[Math.floor(Math.random() * hueOptions.length)];
+			// Launch from a random X position, upper 2/3 of canvas
+			const originX = random(clientWidth * 0.15, clientWidth * 0.85);
+			const originY = random(clientHeight * 0.15, clientHeight * 0.6);
+
+			for (let i = 0; i < 50; i++) {
+				const angle = (Math.PI * 2 * i) / 50;
+				const speed = random(1.5, 4);
+				particles.push({
+					x: originX,
+					y: originY,
+					vx: Math.cos(angle) * speed,
+					vy: Math.sin(angle) * speed,
+					life: 120,       
+					decay: random(0.6, 0.9), 
+					hue: hue,
+					size: random(2, 4)
+				});
+			}
+		}
+
+		function update() {
+			ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
+			ctx.fillRect(0, 0, clientWidth, clientHeight);
+
+			if (timer % 40 === 0) createFirework();
+
+			particles.forEach(p => {
+				p.x += p.vx;
+				p.y += p.vy;
+				p.vy += 0.05;
+				p.vx *= 0.99;
+				p.life -= p.decay;
+
+				const alpha = p.life / 120;
+				// Twinkle: flicker opacity randomly each frame
+				const twinkle = 0.5 + Math.random() * 0.5;
+				const finalAlpha = alpha * twinkle;
+
+				// Tiny sharp core
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, p.size * 0.4, 0, Math.PI * 2);
+				ctx.fillStyle = `hsla(${p.hue}, 100%, 95%, ${finalAlpha})`;
+				ctx.fill();
+
+				// Soft glow halo — very faint and wide
+				const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5);
+				grad.addColorStop(0, `hsla(${p.hue}, 100%, 75%, ${finalAlpha * 0.5})`);
+				grad.addColorStop(1, `hsla(${p.hue}, 100%, 60%, 0)`);
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+				ctx.fillStyle = grad;
+				ctx.fill();
+
+				// Cross sparkle lines
+				if (Math.random() > 0.5) {
+					ctx.save();
+					ctx.globalAlpha = finalAlpha * 0.6;
+					ctx.strokeStyle = `hsla(${p.hue}, 100%, 90%, 1)`;
+					ctx.lineWidth = 0.4;
+					const len = p.size * 3;
+					ctx.beginPath();
+					ctx.moveTo(p.x - len, p.y);
+					ctx.lineTo(p.x + len, p.y);
+					ctx.moveTo(p.x, p.y - len);
+					ctx.lineTo(p.x, p.y + len);
+					ctx.stroke();
+					ctx.restore();
+				}
+			});
+
+			particles = particles.filter(p => p.life > 0);
+			timer++;
+		}
+
+		setInterval(update, frameDelay);
+	}
+</script>
+</html>
